@@ -1,0 +1,352 @@
+-- =====================================================================
+-- AXIOM CIRCULAR MENU (3-PART RADIAL INTERFACE)
+-- =====================================================================
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local Camera = workspace.CurrentCamera
+
+if PlayerGui:FindFirstChild("AxiomCircularMenu") then
+    PlayerGui.AxiomCircularMenu:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AxiomCircularMenu"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = PlayerGui
+
+-- 1. Nút Icon tròn chính (?)
+local MainBtn = Instance.new("TextButton")
+MainBtn.Size = UDim2.new(0, 52, 0, 52)
+MainBtn.Position = UDim2.new(0, 25, 0.4, 0)
+MainBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+MainBtn.BorderColor3 = Color3.fromRGB(0, 255, 120)
+MainBtn.BorderSizePixel = 2
+MainBtn.TextColor3 = Color3.fromRGB(0, 255, 120)
+MainBtn.TextSize = 24
+MainBtn.Font = Enum.Font.GothamBold
+MainBtn.Text = "?"
+MainBtn.Active = true
+MainBtn.Draggable = true
+MainBtn.Parent = ScreenGui
+
+Instance.new("UICorner", MainBtn).CornerRadius = UDim.new(1, 0)
+
+-- 2. Menu chính chia 3 phần (Hiệu năng | Giả lập PC | Tính năng hay)
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 320, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 16)
+MainFrame.BorderSizePixel = 0
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 16)
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(0, 255, 120)
+Stroke.Thickness = 1.5
+Stroke.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.TextColor3 = Color3.fromRGB(0, 255, 120)
+Title.TextSize = 15
+Title.Font = Enum.Font.GothamBold
+Title.Text = "⚡ AXIOM RADIAL MENU ⚡"
+Title.Parent = MainFrame
+
+MainBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- Hàm tạo tiêu đề mục phân loại
+local function createCategory(text, posY)
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0, 300, 0, 25)
+    lbl.Position = UDim2.new(0.5, -150, 0, posY)
+    lbl.BackgroundTransparency = 1
+    lbl.TextColor3 = Color3.fromRGB(0, 255, 120)
+    lbl.TextSize = 12
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Text = "📌 " .. text
+    lbl.Parent = MainFrame
+end
+
+-- Hàm tạo nút bấm tính năng
+local function createButton(text, posY, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 300, 0, 32)
+    btn.Position = UDim2.new(0.5, -150, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 12
+    btn.Font = Enum.Font.GothamSemibold
+    btn.Text = text
+    btn.Parent = MainFrame
+
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+    local active = false
+    btn.MouseButton1Click:Connect(function()
+        active = not active
+        if active then
+            btn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+        end
+        callback(active, btn)
+    end)
+end
+
+-- =====================================================================
+-- PHẦN 1: HIỆU NĂNG (ESP, X-ray, Aimbot)
+-- =====================================================================
+createCategory("HIỆU NĂNG", 45)
+
+-- 1. ESP + khoảng cách + máu địch
+local espConn
+createButton("👁️ ESP Địch (Khoảng cách & Máu)", 72, function(state)
+    if state then
+        espConn = RunService.Heartbeat:Connect(function()
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character then
+                    local char = p.Character
+                    local hum = char:FindFirstChild("Humanoid")
+                    local root = char:FindFirstChild("HumanoidRootPart")
+                    if hum and root and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local bill = char:FindFirstChild("AxiomPerF") or Instance.new("BillboardGui", char)
+                        bill.Name = "AxiomPerF"
+                        bill.Size = UDim2.new(0, 140, 0, 40)
+                        bill.StudsOffset = Vector3.new(0, 3.5, 0)
+                        bill.AlwaysOnTop = true
+                        
+                        local txt = bill:FindFirstChildOfClass("TextLabel") or Instance.new("TextLabel", bill)
+                        txt.Size = UDim2.new(1, 0, 1, 0)
+                        txt.BackgroundTransparency = 1
+                        txt.TextColor3 = Color3.fromRGB(255, 50, 50)
+                        txt.TextStrokeTransparency = 0
+                        txt.TextSize = 11
+                        txt.Font = Enum.Font.GothamBold
+                        
+                        local dist = math.floor((LocalPlayer.Character.HumanoidRootPart.Position - root.Position).Magnitude)
+                        local hp = math.floor(hum.Health)
+                        txt.Text = p.Name .. "\nHP: " .. hp .. " | " .. dist .. "m"
+                    end
+                end
+            end
+        end)
+    else
+        if espConn then espConn:Disconnect() espConn = nil end
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("AxiomPerF") then
+                p.Character.AxiomPerF:Destroy()
+            end
+        end
+    end
+end)
+
+-- 2. X-ray + Xuyên tường
+local noclipConn
+createButton("🧱 X-ray & Xuyên Tường (Noclip)", 108, function(state)
+    if state then
+        noclipConn = RunService.Stepped:Connect(function()
+            local char = LocalPlayer.Character
+            if char then
+                for _, p in pairs(char:GetDescendants()) do
+                    if p:IsA("BasePart") then
+                        p.Transparency = 0.5
+                        p.CanCollide = false
+                    end
+                end
+            end
+        end)
+    else
+        if noclipConn then noclipConn:Disconnect() noclipConn = nil end
+        local char = LocalPlayer.Character
+        if char then
+            for _, p in pairs(char:GetDescendants()) do
+                if p:IsA("BasePart") then
+                    p.Transparency = 0
+                    p.CanCollide = true
+                end
+            end
+        end
+    end
+end)
+
+-- 3. Aimbot tự ghim địch
+local aimbotConn
+createButton("🎯 Aimbot Tự Động Ghim Địch", 144, function(state)
+    if state then
+        aimbotConn = RunService.RenderStepped:Connect(function()
+            local closestTarget, minDist = nil, math.huge
+            local mousePos = UserInputService:GetMouseLocation()
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+                    local hum = p.Character:FindFirstChild("Humanoid")
+                    if hum and hum.Health > 0 then
+                        local screenPoint, onScreen = Camera:WorldToViewportPoint(p.Character.Head.Position)
+                        if onScreen then
+                            local dist = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePos).Magnitude
+                            if dist < minDist then
+                                minDist = dist
+                                closestTarget = p.Character.Head
+                            end
+                        end
+                    end
+                end
+            end
+            if closestTarget then
+                Camera.CFrame = CFrame.new(Camera.CFrame.Position, closestTarget.Position)
+            end
+        end)
+    else
+        if aimbotConn then aimbotConn:Disconnect() aimbotConn = nil end
+    end
+end)
+
+-- =====================================================================
+-- PHẦN 2: GIẢ LẬP PC (WASD + S đổi màu)
+-- =====================================================================
+createCategory("GIẢ LẬP PC", 184)
+
+local pcGui = Instance.new("ScreenGui", PlayerGui)
+pcGui.Name = "AxiomPCController"
+pcGui.Enabled = false
+
+local function createKey(text, keyCode, pos)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 42, 0, 42)
+    btn.Position = pos
+    btn.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    btn.BorderColor3 = Color3.fromRGB(0, 255, 120)
+    btn.TextColor3 = Color3.fromRGB(0, 255, 120)
+    btn.TextSize = 14
+    btn.Font = Enum.Font.GothamBold
+    btn.Text = text
+    btn.Parent = pcGui
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+
+    btn.MouseButton1Down:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        VirtualInputManager:SendKeyEvent(true, keyCode, false, game)
+    end)
+    btn.MouseButton1Up:Connect(function()
+        btn.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+        btn.TextColor3 = Color3.fromRGB(0, 255, 120)
+        VirtualInputManager:SendKeyEvent(false, keyCode, false, game)
+    end)
+end
+
+createKey("W", Enum.KeyCode.W, UDim2.new(0, 50, 1, -130))
+createKey("A", Enum.KeyCode.A, UDim2.new(0, 5, 1, -85))
+createKey("S", Enum.KeyCode.S, UDim2.new(0, 50, 1, -85))
+createKey("D", Enum.KeyCode.D, UDim2.new(0, 95, 1, -85))
+
+createButton("⌨️ Bật/Tắt Giả Lập PC (WASD & S đổi màu)", 212, function(state)
+    pcGui.Enabled = state
+end)
+
+-- =====================================================================
+-- PHẦN 3: TÍNH NĂNG HAY (Tốc độ, Đồ tiếng Việt, Dịch chuyển, Hút đồ)
+-- =====================================================================
+createCategory("TÍNH NĂNG HAY", 252)
+
+-- 1. Tăng tốc độ chạy
+local speedConn
+createButton("⚡ Tăng Tốc Độ Chạy", 280, function(state)
+    if state then
+        speedConn = RunService.Heartbeat:Connect(function()
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.WalkSpeed = 50
+            end
+        end)
+    else
+        if speedConn then speedConn:Disconnect() speedConn = nil end
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid.WalkSpeed = 16
+        end
+    end
+end)
+
+-- 2. Đồ tên (Tên tiếng Việt + khoảng cách)
+local vnEspConn
+createButton("🏷️ Đồ Tên (Tiếng Việt & Khoảng Cách)", 316, function(state)
+    if state then
+        vnEspConn = RunService.Heartbeat:Connect(function()
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and (obj.Name:lower():find("item") or obj.Name:lower():find("fruit") or obj:FindFirstChildOfClass("TouchTransmitter")) then
+                    local bill = obj:FindFirstChild("VNESP") or Instance.new("BillboardGui", obj)
+                    bill.Name = "VNESP"
+                    bill.Size = UDim2.new(0, 120, 0, 35)
+                    bill.AlwaysOnTop = true
+                    
+                    local txt = bill:FindFirstChildOfClass("TextLabel") or Instance.new("TextLabel", bill)
+                    txt.Size = UDim2.new(1, 0, 1, 0)
+                    txt.BackgroundTransparency = 1
+                    txt.TextColor3 = Color3.fromRGB(255, 215, 0)
+                    txt.TextStrokeTransparency = 0
+                    txt.TextSize = 11
+                    txt.Font = Enum.Font.GothamBold
+                    
+                    local tenVn = "Vật Phẩm"
+                    local lname = obj.Name:lower()
+                    if lname:find("fruit") then tenVn = "Trái Ác Quỷ"
+                    elseif lname:find("chest") then tenVn = "Rương Báu"
+                    elseif lname:find("sword") then tenVn = "Thanh Kiếm" end
+                    
+                    local dist = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and math.floor((LocalPlayer.Character.HumanoidRootPart.Position - obj.Position).Magnitude) or 0
+                    txt.Text = tenVn .. "\n[" .. dist .. "m]"
+                end
+            end
+        end)
+    else
+        if vnEspConn then vnEspConn:Disconnect() vnEspConn = nil end
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("BasePart") and obj:FindFirstChild("VNESP") then
+                obj.VNESP:Destroy()
+            end
+        end
+    end
+end)
+
+-- 3. Dịch chuyển người chơi về chỗ mình
+createButton("🌀 Kéo Tất Cả Người Chơi Về Chỗ Tôi", 352, function()
+    local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if myRoot then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                p.Character.HumanoidRootPart.CFrame = myRoot.CFrame + Vector3.new(3, 0, 3)
+            end
+        end
+    end
+end)
+
+-- 4. Đồ tự hút
+local magnetConn
+createButton("🧲 Tự Động Hút Vật Phẩm / Trái Cây", 388, function(state)
+    if state then
+        magnetConn = RunService.Heartbeat:Connect(function()
+            local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myRoot then
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") and (obj.Name:lower():find("item") or obj.Name:lower():find("fruit") or obj:FindFirstChildOfClass("TouchTransmitter")) then
+                        obj.CFrame = myRoot.CFrame
+                    end
+                end
+            end
+        end)
+    else
+        if magnetConn then magnetConn:Disconnect() magnetConn = nil end
+    end
+end)
